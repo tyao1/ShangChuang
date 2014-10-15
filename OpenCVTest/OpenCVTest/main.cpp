@@ -91,16 +91,17 @@ int main()
 			{
 				approxPolyDP(Mat(contours[i]), contours_poly[i], 1, true);
 				Rect appRect(boundingRect(Mat(contours_poly[i])));
-				if (appRect.width>appRect.height)
+				if (appRect.width/appRect.height>1.3)  //specific rectangle!
 					boundRect.push_back(appRect);
 			}
 		Mat region;
 		origin.copyTo(region);
-
 		Mat msk = Mat::zeros(frame.size(), CV_8U);
 		for (uint i = 0; i < boundRect.size(); i++)
 		{
 			rectangle(region, boundRect[i], Scalar(255, 255, 255), 2);
+			rectangle(frame, boundRect[i], Scalar(255, 255, 255), 2);
+
 			msk(boundRect[i]) = 1;
 		}
 		imshow("5.area", region);
@@ -114,15 +115,20 @@ int main()
 		gray.copyTo(processed, msk);
 
 
+		double mosize = 3.9;
+
 		//have to dilate the mask region
+		/*method 1
 		element = getStructuringElement(MORPH_RECT,
-			Size(2 * 5, 2 * 5 + 1),
-			Point(5, 5));
+			Size(2 * mosize + 1, 2 * mosize + 1),
+			Point(mosize, mosize));
 		dilate(processed, processed, element);
-
-		//element = getStructuringElement(MORPH_RECT, Size(9, 9));
-		//cv::morphologyEx(processed, processed, MORPH_CLOSE, element);
-
+		*/
+		/* method 2*/
+		mosize = 3.1;
+		element = getStructuringElement(MORPH_RECT, Size(2 * mosize + 1, 2 * mosize + 1));
+		morphologyEx(processed, processed, MORPH_GRADIENT, element);
+		
 		imshow("6.Processed mask",processed);
 		
 		Mat tmp;
